@@ -1,3 +1,9 @@
+
+def inverse(p, field):
+    if p == None:
+        return p
+    return p[0], (-p[1] % field)
+
 def point_addition(p1, p2, A, B, field):
     # Unpack the points
     x1, y1 = p1
@@ -15,11 +21,11 @@ def point_addition(p1, p2, A, B, field):
         y3 = (m * (x1 - x3) - y1) % field
 
         # Calculate the negation of the third point
-        r_neg = x3
-        r_neg = (-y3) % field
+        x3 = x3 % field
+        y3 = (-y3) % field
 
         # Return the negation of the third point
-        return r_neg, r_neg
+        return x3, y3
 
     elif p1 == p2:
         # Calculate the slope of the tangent line
@@ -37,6 +43,9 @@ def point_addition(p1, p2, A, B, field):
 
         # Return the negation of the intersection point
         return x_neg, y_neg
+    
+    elif p1 == None or p2 == None or p2 == inverse(p1, field):
+        return None
 
     return None
 
