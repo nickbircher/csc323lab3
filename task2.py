@@ -53,13 +53,9 @@ def generate_point(ec: EC):
     return Point(x, y)
 
 
-def generate_point_with_order(ec: EC, order: int, desired: int):
+def generate_point_with_order(ec: EC, desired: int):
     for i in range(100):
-        # find a random point
         p = generate_point(ec)
-        # find the order of the point
-        m = point_multiplication(p, (order // desired), ec)
+        m = point_multiplication(p, (ec.order // desired), ec)
         if m != Point(0, 0):
             return m
-        
-    return None

@@ -19,10 +19,11 @@ class Point:
     
 
 class EC:
-     def __init__(self, a, b, field):
+     def __init__(self, a, b, field, order):
         self.a = a
         self.b = b
         self.field = field
+        self.order = order
 
 
 def point_addition(p: Point, q: Point, ec: EC):
@@ -59,11 +60,12 @@ def point_multiplication(p: Point, n: int, ec: EC):
         n = n // 2
     return r
 
+
 # Define the curve parameters and field
 A = 3
 B = 8
 field = 13
-test_ec = EC(A, B, field)
+test_ec = EC(A, B, field, 9)
 
 # Define the test cases
 test_cases = [
