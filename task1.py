@@ -1,96 +1,90 @@
+class Point:
+    x: int
+    y: int
 
-def inverse(p, field):
-    if p == None:
-        return p
-    return p[0], (-p[1] % field)
 
-def point_addition(p1, p2, A, B, field):
-    # Unpack the points
-    x1, y1 = p1
-    x2, y2 = p2
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-    # Origin is infinity, represented as None
-    if p1 != p2 and p1 != None and p2 != None:
-        # Calculate the slope
-        m = (y2 - y1) / (x2 - x1)
-
-        # Calculate the x-coordinate of the third point
-        x3 = (m**2 - x1 - x2) % field
-
-        # Calculate the y-coordinate of the third point
-        y3 = (m * (x1 - x3) - y1) % field
-
-        # Calculate the negation of the third point
-        x3 = x3 % field
-        y3 = (-y3) % field
-
-        # Return the negation of the third point
-        return x3, y3
-
-    elif p1 == p2:
-        # Calculate the slope of the tangent line
-        m = (3 * x1**2 + A) / (2 * y1)
-
-        # Calculate the x-coordinate of the intersection point
-        x3 = (m**2 - 2 * x1) % field
-
-        # Calculate the y-coordinate of the intersection point
-        y3 = (m * (x1 - x3) - y1) % field
-
-        # Calculate the negation of the intersection point
-        x_neg = x3
-        y_neg = (-y3) % field
-
-        # Return the negation of the intersection point
-        return x_neg, y_neg
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
     
-    elif p1 == None or p2 == None or p2 == inverse(p1, field):
-        return None
+    def __str__(self):
+        return f"({self.x}, {self.y})"
 
-    return None
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
 
-def point_multiplication(p, scalar, A, B, field):
-    # Initialize the result as the origin
-    result = None
+    
 
-    i = scalar
-    # Add the point to itself scalar times
-    while i > 0:
-        if i % 2 == 1:
-            result = point_addition(result, p, A, B, field)
-        point_addition(p, p, A, B, field)
-        if i > 1:
-            i = i // 2
-        else:
-            i -= 1
+class EC:
+     def __init__(self, a, b, field):
+        self.a = a
+        self.b = b
+        self.field = field
 
-    return result
+
+def point_addition(p: Point, q: Point, ec: EC):
+    if p == Point(0, 0):
+        return q
+    
+    elif q == Point(0, 0):
+        return p
+    
+    elif p.x == q.x and pow(p.y + q.y, 1, ec.field) == 0:
+        return Point(0, 0)
+    
+    elif p != q:
+        # m is slope
+        m = (q.y - p.y) * pow(q.x - p.x, -1, ec.field)
+
+    else:
+        m = (3 * pow(p.x, 2, ec.field) + ec.a) * pow(2 * p.y, -1, ec.field)
+
+    m = pow(m, 1, ec.field)
+    x = pow((pow(m, 2, ec.field) - p.x - q.x), 1, ec.field)
+    y = pow((m * (p.x - x) - p.y), 1, ec.field)
+    return Point(x, y)
+
+
+def point_multiplication(p: Point, n: int, ec: EC):
+    r = Point(0, 0)
+
+    while n > 0:
+        if pow(n, 1, 2) == 1:
+            r = point_addition(r, p, ec)
+
+        p = point_addition(p, p, ec)
+        n = n // 2
+    return r
 
 # Define the curve parameters and field
 A = 3
 B = 8
 field = 13
+test_ec = EC(A, B, field)
 
 # Define the test cases
 test_cases = [
-    ((9, 7), (1, 8), (2, 10)),
-    ((9, 7), (9, 7), (9, 6)),
-    ((12, 11), (12, 2), None)
+    (Point(9, 7), Point(1, 8), Point(2, 10)),
+    (Point(9, 7), Point(9, 7), Point(9, 6)),
+    (Point(12, 11), Point(12, 2), Point(0, 0))
 ]
 
 # Test the point_addition function
 for p1, p2, expected in test_cases:
-    result = point_addition(p1, p2, A, B, field)
+    result = point_addition(p1, p2, test_ec)
     assert result == expected, f"For {p1} + {p2}, expected {expected} but got {result}"
 
 print("All point addition tests passed.")
 
 # Test the point_multiplication function
 # We only have one test case for this function
-p = (9, 7)
+p = Point(9, 7)
 scalar = 2
-expected = (9, 6)
-result = point_multiplication(p, scalar, A, B, field)
+expected = Point(9, 6)
+result = point_multiplication(p, scalar, test_ec)
 assert result == expected, f"For {scalar} * {p}, expected {expected} but got {result}"
 
 print("All point multiplication tests passed.")
